@@ -118,12 +118,19 @@ tmux_kill_window_interactively() {
 
 
 tmux_kill_window_interactively_choices() {
-  list_windows=$(tmux list-windows);
-  echo "$list_windows" | while read line; do
-    result_line=$(echo "$line" | awk '{print $1 " " $2 " " $3 " " $4 " " $5}')
-    [[ "$line" =~ "active" ]] && result_line="${GREEN}"$result_line" (active)${C_END}"
-    echo  "${RED}kill${C_END} ==> [ $result_line ]"
+  tmux list-windows | while read line; do
+    if [[ $line =~ "active" ]]; then
+      echo " ${RED}kill${C_END} ==> ${GREEN}[ $(echo $line | awk '{print $1 " " $2 " " $3 " " $4 " " $5}') (active) ${C_END}]"
+    else
+      echo " ${RED}kill${C_END} ==> [ $(echo $line | awk '{print $1 " " $2 " " $3 " " $4 " " $5}') ]"
+    fi
   done
+#  list_windows=$(tmux list-windows);
+#  echo "$list_windows" | while read line; do
+#    result_line=$(echo "$line" | awk '{print $1 " " $2 " " $3 " " $4 " " $5}')
+#    [[ "$line" =~ "active" ]] && result_line="${GREEN}"$result_line" (active)${C_END}"
+#    echo  "${RED}kill${C_END} ==> [ $result_line ]"
+#  done
   echo "${BLUE}cancel${C_END}"
 }
 
