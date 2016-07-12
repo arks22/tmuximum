@@ -2,22 +2,14 @@
 
 
 tmux_operation_interactively() {
-  if [ ! -z $TMUX ]; then
-    tmux_operations_interactively_in_tmux
-  else
-    if $(tmux has-session); then
-      answer=$(tmux_operation_interactively_choices | fzf-tmux --ansi --prompt="Tmux >")
-      if [ ! "$answer" = "cancel" ]; then
-        if [[ "$answer" =~ "new session" ]]; then
-          tmux new-session
-        elif [ "$answer" = "kill session" ]; then
-          tmux_kill_session_interactively
-        else
-          tmux attach -t $(echo "$answer" | awk '{print $4}' | sed 's/://')
-        fi
-      fi
-    else
+  answer=$(tmux_operation_interactively_choices | fzf-tmux --ansi --prompt="Tmux >")
+  if [ ! "$answer" = "cancel" ]; then
+    if [[ "$answer" =~ "new session" ]]; then
       tmux new-session
+    elif [ "$answer" = "kill session" ]; then
+      tmux_kill_session_interactively
+    else
+      tmux attach -t $(echo "$answer" | awk '{print $4}' | sed 's/://')
     fi
   fi
 }
@@ -155,4 +147,8 @@ set_color() {
 set_color
 
 
-tmux_operation_interactively
+if [ -z $TMUX ]; then
+  tmux_operation_interactively
+else
+  tmux_operations_interactively_in_tmux
+fi
