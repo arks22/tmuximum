@@ -1,13 +1,22 @@
 #!/bin/sh
 
-
 tmux_operation_interactively() {
-  answer=$(tmux_operation_interactively_choices | fzf-tmux --ansi --prompt="Tmux >")
+  if [ -z $TMUX ]; then
+    answer=$(tmux_operation_interactively_choices | fzf-tmux --ansi --prompt="Tmux >")
+  else
+    answer=$(tmux_operation_interactively_in_tmux_choices | fzf-tmux --ansi --prompt="Tmux >")
+  fi
   if [ ! "$answer" = "cancel" ]; then
     if [[ "$answer" =~ "new session" ]]; then
       tmux new-session
+    elif [[ "$answer" =~ "new window" ]]; then
+      tmux new-window
     elif [ "$answer" = "kill session" ]; then
       tmux_kill_session_interactively
+    elif [ "$answer" = "kill window" ]; then
+      tmux_kill_window_interactively
+    elif [[ "$answer" =~ "switch" ]] && [[ ! "$answer" =~ "new window" ]]; then
+      tmux select-window -t $(echo "$answer" | awk '{print $4}' | sed "s/://g")
     else
       tmux attach -t $(echo "$answer" | awk '{print $4}' | sed 's/://')
     fi
@@ -27,22 +36,6 @@ tmux_operation_interactively_choices() {
     echo "${GREEN}create${C_END} ==> [ ${BOLD}new session${C_END} ]"
   fi
   echo "${BLUE}cancel${C_END}"
-}
-
-
-tmux_operations_interactively_in_tmux() {
-  answer=$(tmux_operation_interactively_in_tmux_choices | fzf-tmux --ansi --prompt="Tmux >")
-  if [ ! "$answer" = "cancel" ]; then
-    if [[ "$answer" =~ "new window" ]]; then
-      tmux new-window
-    elif [ "$answer" = "kill session" ]; then
-      tmux_kill_session_interactively
-    elif [ "$answer" = "kill window" ]; then
-      tmux_kill_window_interactively
-    else
-      tmux select-window -t $(echo "$answer" | awk '{print $4}' | sed "s/://g")
-    fi
-  fi
 }
 
 
@@ -142,9 +135,4 @@ set_color() {
 
 set_color
 
-
-if [ -z $TMUX ]; then
-  tmux_operation_interactively
-else
-  tmux_operations_interactively_in_tmux
-fi
+call_tmux_interactively
