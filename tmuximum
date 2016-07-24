@@ -8,7 +8,7 @@ tmux_operation_interactively() {
   fi
   if [ ! "$answer" = "cancel" ]; then
     if [[ "$answer" =~ "new session" ]]; then
-      tmux_new_sesssion
+      tmux-new-session
     elif [[ "$answer" =~ "new window" ]]; then
       tmux new-window
     elif [ "$answer" = "kill session" ]; then
