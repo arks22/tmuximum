@@ -8,7 +8,7 @@ tmux_operation_interactively() {
   fi
   if [ ! "$answer" = "cancel" ]; then
     if [[ "$answer" =~ "new session" ]]; then
-      tmux new-session
+      tmux_new_sesssion
     elif [[ "$answer" =~ "new window" ]]; then
       tmux new-window
     elif [ "$answer" = "kill session" ]; then
@@ -39,6 +39,8 @@ tmux_operation_interactively_choices() {
 }
 
 
+
+
 tmux_operation_interactively_in_tmux_choices() {
   local list_sessions list_windows
   list_windows=$(tmux list-windows)
@@ -60,26 +62,18 @@ tmux_operation_interactively_in_tmux_choices() {
 tmux_kill_session_interactively() {
   answer=$(tmux_kill_session_interactively_choices | fzf-tmux --ansi --prompt="Tmux >")
   if [ "$answer" = "cancel" ]; then
-    call_tmux_interactively
+    tmux_operation_interactively
   elif [[ "$answer" =~ "Server" ]]; then
     tmux kill-server
-    call_tmux_interactively
+    tmux_operation_interactively
   else
     tmux kill-session -t $(echo "$answer" | awk '{print $4}' | sed "s/://g")
     if $(tmux has-session); then
       tmux_kill_session_interactively
     else
-      call_tmux_interactively
+      tmux_operation_interactively
     fi
   fi
-}
-
-call_tmux_interactively() {
-  if [ -z $TMUX ]; then
-    tmux_operation_interactively
-  else
-    tmux_operations_interactively_in_tmux
-  fi 
 }
 
 
@@ -135,4 +129,4 @@ set_color() {
 
 set_color
 
-call_tmux_interactively
+tmux_operation_interactively
