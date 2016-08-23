@@ -1,116 +1,70 @@
 #!/bin/sh
 
-tmux_operation_interactively() {
-  if [ -z $TMUX ]; then
-    answer=$(tmux_operation_interactively_choices | fzf-tmux --ansi --prompt="Tmux >")
-  else
-    answer=$(tmux_operation_interactively_in_tmux_choices | fzf-tmux --ansi --prompt="Tmux >")
-  fi
-  if [ ! "$answer" = "cancel" ]; then
-    if [[ "$answer" =~ "new session" ]]; then
-      tmux-new-session
-    elif [[ "$answer" =~ "new window" ]]; then
-      tmux new-window
-    elif [ "$answer" = "kill session" ]; then
-      tmux_kill_session_interactively
-    elif [ "$answer" = "kill window" ]; then
-      tmux_kill_window_interactively
-    elif [[ "$answer" =~ "switch" ]] && [[ ! "$answer" =~ "new window" ]]; then
-      tmux select-window -t $(echo "$answer" | awk '{print $4}' | sed "s/://g")
-    else
-      tmux attach -t $(echo "$answer" | awk '{print $4}' | sed 's/://')
-    fi
-  fi
+tmux_operation() {
+  answer=$(tmux_operation_choices | fzf --ansi --select-1 --prompt="Tmux >")
+  case $answer in
+    *new\ session* ) tmux new-session \; split-window -vp 23 \; send-keys -t 0 'vim' C-m ;;
+    *new\ window* ) tmux new-window ;;
+    "kill sessions" ) tmux_kill_session ;;
+    "kill windows" ) tmux_kill_window ;;
+    *switch* ) tmux select-window -t $(echo "$answer" | awk '{print $4}' | sed "s/://g") ;;
+    *attach* ) tmux attach -t $(echo "$answer" | awk '{print $4}' | sed 's/://') ;;
+  esac
 }
 
-
-tmux_operation_interactively_choices() {
-  if $(tmux has-session); then
-    tmux list-sessions | while read line; do
+tmux_operation_choices() {
+  if [ -z $TMUX ]; then
+    tmux list-sessions 2>/dev/null | while read line; do
       [[ ! "$line" =~ "attached" ]] || line="${GREEN}$line${C_END}"
       echo "${GREEN}attach${C_END} ==> [ "$line" ]"
     done
-    echo "${GREEN}create${C_END} ==> [ ${BOLD}new session${C_END} ]"
-    echo "kill session"
+    echo "${GREEN}create${C_END} ==> [ ${GREEN}new session${C_END} ]"
   else
-    echo "${GREEN}create${C_END} ==> [ ${BOLD}new session${C_END} ]"
-  fi
-  echo "${BLUE}cancel${C_END}"
-}
-
-
-
-
-tmux_operation_interactively_in_tmux_choices() {
-  local list_sessions list_windows
-  list_windows=$(tmux list-windows)
-  if [ ! $(echo "$list_windows" | grep -c '') = 1 ]; then
-    echo "$list_windows" | while read line; do
-      if [[ ! $line =~ "active" ]]; then
-        line=$(echo "$line" | awk '{print $1 " " $2 " " $3 " " $4 " " $5}')
-        echo  "${CYAN}switch${C_END} ==> [ $line ]"
-      fi
+    tmux list-windows | sed "/active/d" | while read line; do
+      echo  "${CYAN}switch${C_END} ==> [ $(echo $line | awk '{print $1 " " $2 " " $3 " " $4 " " $5}') ]"
     done
+    echo  "${CYAN}switch${C_END} ==> [ new window ]"
+    echo "${RED}kill${C_END} windows"
   fi
-  echo  "${CYAN}switch${C_END} ==> [ ${BOLD}new window${C_END} ]"
-  echo "kill session"
-  echo "kill window"
-  echo "${BLUE}cancel${C_END}"
+  tmux has-session 2>/dev/null && echo "${RED}kill${C_END} sessions"
 }
 
-
-tmux_kill_session_interactively() {
-  answer=$(tmux_kill_session_interactively_choices | fzf-tmux --ansi --prompt="Tmux >")
-  if [ "$answer" = "cancel" ]; then
-    tmux_operation_interactively
-  elif [[ "$answer" =~ "Server" ]]; then
-    tmux kill-server
-    tmux_operation_interactively
-  else
-    tmux kill-session -t $(echo "$answer" | awk '{print $4}' | sed "s/://g")
-    if $(tmux has-session); then
-      tmux_kill_session_interactively
-    else
-      tmux_operation_interactively
-    fi
-  fi
+tmux_kill_session() {
+  answer=$(tmux_kill_session_choices | fzf --ansi --prompt="Tmux >")
+  case $answer in
+    *kill*Server* ) tmux kill-server ; tmux_operation ;;
+    *kill*windows* ) tmux kill-session -t $(echo "$answer" | awk '{print $4}' | sed "s/://g")
+      if $(tmux has-session 2>/dev/null); then
+        tmux_kill_session
+      fi
+    ;;
+  esac
 }
 
-
-tmux_kill_session_interactively_choices() {
-  list_sessions=$(tmux list-sessions);
+tmux_kill_session_choices() {
+  list_sessions=$(tmux list-sessions 2>/dev/null);
   echo "$list_sessions" | while read line; do
     [[ "$line" =~ "attached" ]] && line="${GREEN}"$line"${C_END}"
     echo  "${RED}kill${C_END} ==> [ "$line" ]"
   done
   [ $(echo "$list_sessions" | grep -c '')  = 1 ] || echo "${RED}kill${C_END} ==> [ ${RED}Server${C_END} ]"
-  echo "${BLUE}cancel${C_END}"
 }
 
-
-tmux_kill_window_interactively() {
-  answer=$(tmux_kill_window_interactively_choices | fzf-tmux --ansi --prompt="Tmux >")
-  if [ "$answer" = "cancel" ]; then
-    tmux_operations_interactively_in_tmux
-  else
+tmux_kill_window() {
+  answer=$(tmux_kill_window_choices | fzf --ansi --prompt="Tmux >")
+  if [[ "$answer" =~ "kill" ]]; then
     tmux kill-window -t $(echo "$answer" | awk '{print $4}' | sed "s/://g")
-    tmux_kill_window_interactively
+    tmux_kill_window
   fi
 }
 
-
-tmux_kill_window_interactively_choices() {
+tmux_kill_window_choices() {
   tmux list-windows | while read line; do
-    if [[ $line =~ "active" ]]; then
-      echo " ${RED}kill${C_END} ==> ${GREEN}[ $(echo $line | awk '{print $1 " " $2 " " $3 " " $4 " " $5}') (active) ${C_END}]"
-    else
-      echo " ${RED}kill${C_END} ==> [ $(echo $line | awk '{print $1 " " $2 " " $3 " " $4 " " $5}') ]"
-    fi
+    line="$(echo $line | awk '{print $1 " " $2 " " $3 " " $4 " " $5 " " $9}')"
+    [[ $line =~ "active" ]] && line="${GRENN}$line${C_END}"
+    echo " ${RED}kill${C_END} ==> [ $line ]"
   done
-  echo "${BLUE}cancel${C_END}"
 }
-
-
 
 set_color() {
   readonly BLACK="\033[30m"
@@ -122,11 +76,13 @@ set_color() {
   readonly CYAN="\033[36m"
   readonly WHITE="\033[37m"
 
-  readonly BOLD="\033[1m"
-
   readonly C_END="\033[m"
 }
 
 set_color
 
-tmux_operation_interactively
+if type fzf >/dev/null 2>&1 ; then
+  tmux_operation
+else
+  echo "tmuximum: Required \"fzf\""
+fi
