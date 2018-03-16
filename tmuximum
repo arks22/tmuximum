@@ -1,7 +1,19 @@
-#!/bin/sh
+#!/bin/zsh
+
+if [[ $SHELL =~ "zsh" ]] ; then
+  autoload -Uz colors
+  colors
+fi
+
+tmuximum_help() {
+  echo "Usage"
+  echo "OPTION or COMMAND is not required (Except for help)"
+  echo "When you want to quit tmuximum, press esc" 
+  echo "To read this help, enter \"tmuximum --help\" or \" tmuximum help\""
+}
 
 tmux_operation() {
-  answer=$(tmux_operation_choices | fzf --ansi --select-1 --prompt="Tmux >")
+  answer=$(tmux_operation_choices | fzf-tmux -r --ansi --select-1 --prompt="Tmux >")
   case $answer in
     *new\ session* ) tmux new-session \; split-window -vp 23 \; send-keys -t 0 'vim' C-m ;;
     *new\ window* ) tmux new-window ;;
@@ -15,22 +27,22 @@ tmux_operation() {
 tmux_operation_choices() {
   if [ -z $TMUX ]; then
     tmux list-sessions 2>/dev/null | while read line; do
-      [[ ! "$line" =~ "attached" ]] || line="${GREEN}$line${C_END}"
-      echo "${GREEN}attach${C_END} ==> [ "$line" ]"
+      [[ ! "$line" =~ "attached" ]] || line="${fg[green]}$line${reset_color}"
+      echo "${fg[green]}attach${reset_color} ==> [ "$line" ]"
     done
-    echo "${GREEN}create${C_END} ==> [ ${GREEN}new session${C_END} ]"
+    echo "${fg[green]}create${reset_color} ==> [ ${fg[blue]}new session${reset_color} ]"
   else
     tmux list-windows | sed "/active/d" | while read line; do
-      echo  "${CYAN}switch${C_END} ==> [ $(echo $line | awk '{print $1 " " $2 " " $3 " " $4 " " $5}') ]"
+      echo  "${fg[cyan]}switch${reset_color} ==> [ $(echo $line | awk '{print $1 " " $2 " " $3 " " $4 " " $5}') ]"
     done
-    echo  "${CYAN}switch${C_END} ==> [ new window ]"
-    echo "${RED}kill${C_END} windows"
+    echo  "${fg[cyan]}switch${reset_color} ==> [ ${fg[blue]}new window${reset_color} ]"
+    echo "${fg[red]}kill${reset_color} windows"
   fi
-  tmux has-session 2>/dev/null && echo "${RED}kill${C_END} sessions"
+  tmux has-session 2>/dev/null && echo "${fg[red]}kill${reset_color} sessions"
 }
 
 tmux_kill_session() {
-  answer=$(tmux_kill_session_choices | fzf --ansi --prompt="Tmux >")
+  answer=$(tmux_kill_session_choices | fzf-tmux -r --ansi --prompt="Tmux >")
   case $answer in
     *kill*Server* ) tmux kill-server ; tmux_operation ;;
     *kill*windows* ) tmux kill-session -t $(echo "$answer" | awk '{print $4}' | sed "s/://g")
@@ -44,14 +56,14 @@ tmux_kill_session() {
 tmux_kill_session_choices() {
   list_sessions=$(tmux list-sessions 2>/dev/null);
   echo "$list_sessions" | while read line; do
-    [[ "$line" =~ "attached" ]] && line="${GREEN}"$line"${C_END}"
-    echo  "${RED}kill${C_END} ==> [ "$line" ]"
+    [[ "$line" =~ "attached" ]] && line="${fg[green]}"$line"${reset_color}"
+    echo  "${fg[red]}kill${reset_color} ==> [ "$line" ]"
   done
-  [ $(echo "$list_sessions" | grep -c '')  = 1 ] || echo "${RED}kill${C_END} ==> [ ${RED}Server${C_END} ]"
+  [ $(echo "$list_sessions" | grep -c '')  = 1 ] || echo "${fg[red]}kill${reset_color} ==> [ ${fg[red]}Server${reset_color} ]"
 }
 
 tmux_kill_window() {
-  answer=$(tmux_kill_window_choices | fzf --ansi --prompt="Tmux >")
+  answer=$(tmux_kill_window_choices | fzf-tmux -r --ansi --prompt="Tmux >")
   if [[ "$answer" =~ "kill" ]]; then
     tmux kill-window -t $(echo "$answer" | awk '{print $4}' | sed "s/://g")
     tmux_kill_window
@@ -61,28 +73,17 @@ tmux_kill_window() {
 tmux_kill_window_choices() {
   tmux list-windows | while read line; do
     line="$(echo $line | awk '{print $1 " " $2 " " $3 " " $4 " " $5 " " $9}')"
-    [[ $line =~ "active" ]] && line="${GRENN}$line${C_END}"
-    echo " ${RED}kill${C_END} ==> [ $line ]"
+    [[ $line =~ "active" ]] && line="${fg[green]}$line${reset_color}"
+    echo " ${fg[red]}kill${reset_color} ==> [ $line ]"
   done
 }
 
-set_color() {
-  readonly BLACK="\033[30m"
-  readonly RED="\033[31m"
-  readonly GREEN="\033[32m"
-  readonly YELLOW="\033[33m"
-  readonly BLUE="\033[34m"
-  readonly MAGENTA="\033[35m"
-  readonly CYAN="\033[36m"
-  readonly WHITE="\033[37m"
-
-  readonly C_END="\033[m"
-}
-
-set_color
-
-if type fzf >/dev/null 2>&1 ; then
-  tmux_operation
+if type fzf-tmux >/dev/null 2>&1 ; then
+  if [[ $# = 0 ]]
+    tmux_operation
+  elif [[ $1 =~ "help" ]];
+    tmuximum_help
+  fi
 else
-  echo "tmuximum: Required \"fzf\""
-fi
+  echo "tmuximum: \"fzf-tmux\" is required"
+f
