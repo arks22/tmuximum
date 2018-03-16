@@ -79,9 +79,9 @@ tmux_kill_window_choices() {
 }
 
 if type fzf-tmux >/dev/null 2>&1 ; then
-  if [[ $# = 0 ]]
+  if [[ $# = 0 ]] ; then
     tmux_operation
-  elif [[ $1 =~ "help" ]];
+  else
     tmuximum_help
   fi
 else
