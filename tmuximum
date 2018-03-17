@@ -86,4 +86,4 @@ if type fzf-tmux >/dev/null 2>&1 ; then
   fi
 else
   echo "tmuximum: \"fzf-tmux\" is required"
-f
+fi
