@@ -85,7 +85,7 @@ if type fzf-tmux >/dev/null 2>&1 ; then
   else
     tmuximum_help
     if [[ $# = 1 ]] && [[ $1 =~ help ]] ; then
-      exit 1
+      exit 0
     else
       exit 1
     fi
