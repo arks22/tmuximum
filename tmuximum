@@ -82,7 +82,6 @@ tmux_kill_window_choices() {
   done
   echo "${fg[blue]}back${reset_color}"
 }
-}
 
 if type fzf-tmux >/dev/null 2>&1 ; then
   if [[ $# = 0 ]] ; then
