@@ -69,7 +69,7 @@ tmux_kill_window() {
   if [[ "$answer" =~ "kill" ]]; then
     tmux kill-window -t $(echo "$answer" | awk '{print $4}' | sed "s/://g")
     tmux_kill_window
-  else [[ $answer = "back" ]]; then
+  elif [[ $answer = "back" ]]; then
     tmux_operation
   fi
 }
