@@ -50,6 +50,7 @@ tmux_kill_session() {
         tmux_kill_session
       fi
     ;;
+  "back" ) tmux_operation
   esac
 }
 
@@ -60,6 +61,7 @@ tmux_kill_session_choices() {
     echo  "${fg[red]}kill${reset_color} ==> [ "$line" ]"
   done
   [ $(echo "$list_sessions" | grep -c '')  = 1 ] || echo "${fg[red]}kill${reset_color} ==> [ ${fg[red]}Server${reset_color} ]"
+  echo "${fg[blue]}back${reset_color}"
 }
 
 tmux_kill_window() {
