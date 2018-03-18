@@ -69,6 +69,8 @@ tmux_kill_window() {
   if [[ "$answer" =~ "kill" ]]; then
     tmux kill-window -t $(echo "$answer" | awk '{print $4}' | sed "s/://g")
     tmux_kill_window
+  else [[ $answer = "back" ]]; then
+    tmux_operation
   fi
 }
 
@@ -78,16 +80,16 @@ tmux_kill_window_choices() {
     [[ $line =~ "active" ]] && line="${fg[green]}$line${reset_color}"
     echo " ${fg[red]}kill${reset_color} ==> [ $line ]"
   done
+  echo "${fg[blue]}back${reset_color}"
+}
 }
 
 if type fzf-tmux >/dev/null 2>&1 ; then
   if [[ $# = 0 ]] ; then
     tmux_operation
-    exit 0
   else
     tmuximum_help
     if [[ $# = 1 ]] && [[ $1 =~ help ]] ; then
-      exit 0
     else
       exit 1
     fi
