@@ -65,7 +65,6 @@ tmuximum_kill_session_list() {
 }
 
 tmuximum_kill_window() {
-  tmuximum_kill_window_list
   answer=$(tmuximum_kill_window_list | "${interface[@]}" --select-1 --prompt=tmuximum\ \>)
   if [[ "$answer" =~ "kill" ]]; then
     tmux kill-window -t $(echo "$answer" | awk '{print $4}' | sed "s/://g")
