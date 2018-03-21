@@ -13,13 +13,12 @@ tmuximum_help() {
 }
 
 tmuximum_operation() {
-  answer=$(tmuximum_operation_list | $interface -r --ansi --select-1 --prompt="tmuximum >")
+  answer=$(tmuximum_operation_list | "${interface[@]}" --select-1 --prompt=\"tmuximum >\")
   case $answer in
     *new\ session* ) tmux new-session ;;
     *new\ window* ) tmux new-window ;;
     "kill sessions" ) tmuximum_kill_session ;;
     "kill windows" ) tmuximum_kill_window ;;
-    "kill panes" ) tmuximum_kill_pane ;;
     *switch* ) tmux select-window -t $(echo "$answer" | awk '{print $4}' | sed "s/://g") ;;
     *attach* ) tmux attach -t $(echo "$answer" | awk '{print $4}' | sed 's/://') ;;
   esac
@@ -37,14 +36,13 @@ tmuximum_operation_list() {
       echo  "${fg[cyan]}switch${reset_color} ==> [ $(echo $line | awk '{print $1 " " $2 " " $3 " " $4 " " $5}') ]"
     done
     echo  "${fg[cyan]}switch${reset_color} ==> [ ${fg[blue]}new window${reset_color} ]"
-    echo "${fg[red]}kill${reset_color} panes"
     echo "${fg[red]}kill${reset_color} windows"
   fi
   tmux has-session 2>/dev/null && echo "${fg[red]}kill${reset_color} sessions"
 }
 
 tmuximum_kill_session() {
-  answer=$(tmuximum_kill_session_list | $interface -r --ansi --prompt="tmuximum >")
+  answer=$(tmuximum_kill_session_list | eval "${interface[@]}" --prompt="tmuximum >")
   case $answer in
     *kill*Server* ) tmux kill-server ; tmuximum_operation ;;
     *kill*windows* ) tmux kill-session -t $(echo "$answer" | awk '{print $4}' | sed "s/://g")
@@ -68,7 +66,7 @@ tmuximum_kill_session_list() {
 
 tmuximum_kill_window() {
   tmuximum_kill_window_list
-  answer=$(tmuximum_kill_window_list | fzf-tmux -r --ansi --prompt="tmuximum >")
+  answer=$(tmuximum_kill_window_list | eval ${interface[@]} --prompt="tmuximum >")
   if [[ "$answer" =~ "kill" ]]; then
     tmux kill-window -t $(echo "$answer" | awk '{print $4}' | sed "s/://g")
     tmuximum_kill_window
@@ -86,28 +84,10 @@ tmuximum_kill_window_list() {
   echo "${fg[blue]}back${reset_color}"
 }
 
-tmuximum_kill_pane() {
-  answer=$(tmuximum_kill_pane_list | $interface -r --ansi --prompt="tmuximum >")
-  if [[ "$answer" =~ "kill" ]]; then
-    tmux kill-pane -t $(echo "$answer" | awk '{print $4}' | sed "s/://g")
-    tmuximum_pane
-  elif [[ $answer = "back" ]]; then
-    tmuximum_operation
-  fi
-}
-
-tmuximum_kill_pane_list() {
-  tmux list-panes | while read line ; do
-    [[ $line =~ "active" ]] && line="${fg[green]}$line${reset_color}"
-    echo " ${fg[red]}kill${reset_color} ==> [ $line ]"
-  done
-  echo "${fg[blue]}back${reset_color}"
-}
-
 if which fzf-tmux >/dev/null 2>&1 ; then
-  interface="fzf-tmux"
+  interface=(fzf-tmux -r --ansi)
 elif which fzf >/dev/null 2>&1 ; then
-  interface="fzf"
+  interface=(fzf)
 else
   echo "tmuximum: fzf or fzf-tmux is required."
   exit 1
@@ -121,4 +101,3 @@ else
     exit 1
   fi
 fi
-
