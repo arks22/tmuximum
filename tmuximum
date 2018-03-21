@@ -13,13 +13,13 @@ tmuximum_help() {
 }
 
 tmuximum_operation() {
-  answer=$(tmuximum_operation_list | "${interface[@]}" --select-1 --prompt=\"tmuximum >\")
+  answer=$(tmuximum_operation_list | "${interface[@]}" --select-1 --prompt=tmuximum\ \>)
   case $answer in
     *new\ session* ) tmux new-session ;;
     *new\ window* ) tmux new-window ;;
     "kill sessions" ) tmuximum_kill_session ;;
     "kill windows" ) tmuximum_kill_window ;;
-    *switch* ) tmux select-window -t $(echo "$answer" | awk '{print $4}' | sed "s/://g") ;;
+    *move* ) tmux select-window -t $(echo "$answer" | awk '{print $4}' | sed "s/://g") ;;
     *attach* ) tmux attach -t $(echo "$answer" | awk '{print $4}' | sed 's/://') ;;
   esac
 }
@@ -33,16 +33,16 @@ tmuximum_operation_list() {
     echo "${fg[green]}create${reset_color} ==> [ ${fg[blue]}new session${reset_color} ]"
   else
     tmux list-windows | sed "/active/d" | while read line; do
-      echo  "${fg[cyan]}switch${reset_color} ==> [ $(echo $line | awk '{print $1 " " $2 " " $3 " " $4 " " $5}') ]"
+      echo  "${fg[cyan]}move${reset_color} ==> [ $(echo $line | awk '{print $1 " " $2 " " $3 " " $4 " " $5}') ]"
     done
-    echo  "${fg[cyan]}switch${reset_color} ==> [ ${fg[blue]}new window${reset_color} ]"
+    echo  "${fg[cyan]}move${reset_color} ==> [ ${fg[blue]}new window${reset_color} ]"
     echo "${fg[red]}kill${reset_color} windows"
   fi
   tmux has-session 2>/dev/null && echo "${fg[red]}kill${reset_color} sessions"
 }
 
 tmuximum_kill_session() {
-  answer=$(tmuximum_kill_session_list | eval "${interface[@]}" --prompt="tmuximum >")
+  answer=$(tmuximum_kill_session_list | "${interface[@]}" --select-1 --prompt=tmuximum\ \>)
   case $answer in
     *kill*Server* ) tmux kill-server ; tmuximum_operation ;;
     *kill*windows* ) tmux kill-session -t $(echo "$answer" | awk '{print $4}' | sed "s/://g")
@@ -66,7 +66,7 @@ tmuximum_kill_session_list() {
 
 tmuximum_kill_window() {
   tmuximum_kill_window_list
-  answer=$(tmuximum_kill_window_list | eval ${interface[@]} --prompt="tmuximum >")
+  answer=$(tmuximum_kill_window_list | "${interface[@]}" --select-1 --prompt=tmuximum\ \>)
   if [[ "$answer" =~ "kill" ]]; then
     tmux kill-window -t $(echo "$answer" | awk '{print $4}' | sed "s/://g")
     tmuximum_kill_window
