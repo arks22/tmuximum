@@ -75,7 +75,7 @@ tmuximum_kill_window() {
 }
 
 tmuximum_kill_window_choices() {
-  tmuximum list-windows | while read line; do
+  tmuximum list-windows | while read line ; do
     line="$(echo $line | awk '{print $1 " " $2 " " $3 " " $4 " " $5 " " $9}')"
     [[ $line =~ "active" ]] && line="${fg[green]}$line${reset_color}"
     echo " ${fg[red]}kill${reset_color} ==> [ $line ]"
@@ -84,9 +84,9 @@ tmuximum_kill_window_choices() {
 }
 
 
-if which fzf-tmux >/dev/null 2>&1 then
+if which fzf-tmux >/dev/null ; 2>&1 then
   $interface="fzf-tmux"
-elif which fzf >/dev/null 2>&1 then
+elif which fzf >/dev/null ; 2>&1 then
   $interface="fzf"
 else
   echo "tmuximum: fzf or fzf-tmux is required."
