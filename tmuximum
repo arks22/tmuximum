@@ -93,7 +93,7 @@ function main() {
     tmuximum_operation
   else
     case $1 in
-      "\-h" ) tmuximum_help ;;
+      "-h" ) tmuximum_help ;;
       * ) tmuximum_help && exit 1 ;;
     esac
   fi
