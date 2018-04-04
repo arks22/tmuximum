@@ -1,21 +1,21 @@
 #!/bin/bash
 
 function tmuximum_help() {
-  echo -e "tmuximum: Usage"
-  echo -e "$ tmuximum [OPTION]"
-  echo -e "OPTIONS : \"-h\" --> Display help message (this message)"
-  echo -e "To quit tmuximum, press esc" 
+  echo "tmuximum: Usage"
+  echo "$ tmuximum [OPTION]"
+  echo "OPTIONS : \"-h\" --> Display help message (this message)"
+  echo "To quit tmuximum, press esc" 
 }
 
 function tmuximum_operation() {
-  answer=$(tmuximum_operation_list | "${interface[@]}" --select-1 --prompt=tmuximum\ \>)
+  answer=$(tmuximum_operation_list | "${filter[@]}" --select-1 --prompt=tmuximum\ \>)
   case $answer in
     *new\ session* ) tmux new-session ;;
     *new\ window* ) tmux new-window ;;
     "kill sessions" ) tmuximum_kill_session ;;
     "kill windows" ) tmuximum_kill_window ;;
-    *move* ) tmux select-window -t $(echo -e "$answer" | awk '{print $4}' | sed "s/://g") ;;
-    *attach* ) tmux attach -t $(echo -e "$answer" | awk '{print $4}' | sed 's/://') ;;
+    *move* ) tmux select-window -t $(echo  "$answer" | awk '{print $4}' | sed "s/://g") ;;
+    *attach* ) tmux attach -t $(echo "$answer" | awk '{print $4}' | sed 's/://') ;;
   esac
 }
 
@@ -37,10 +37,10 @@ function tmuximum_operation_list() {
 }
 
 function tmuximum_kill_session() {
-  answer=$(tmuximum_kill_session_list | "${interface[@]}" --select-1 --prompt=tmuximum\ \>)
+  answer=$(tmuximum_kill_session_list | "${filter[@]}" --select-1 --prompt=tmuximum\ \>)
   case $answer in
     *kill*Server* ) tmux kill-server ; tmuximum_operation ;;
-    *kill*windows* ) tmux kill-session -t $(echo -e "$answer" | awk '{print $4}' | sed "s/://g")
+    *kill*windows* ) tmux kill-session -t $(echo "$answer" | awk '{print $4}' | sed "s/://g")
       if $(tmux has-session 2>/dev/null); then
         tmuximum_kill_session
       fi
@@ -51,18 +51,18 @@ function tmuximum_kill_session() {
 
 function tmuximum_kill_session_list() {
   list_sessions=$(tmux list-sessions 2>/dev/null);
-  echo -e "$list_sessions" | while read line; do
+  echo "$list_sessions" | while read line; do
     [[ "$line" =~ "attached" ]] && line="${GREEN}"$line"${DEFAULT}"
     echo -e  "${RED}kill${DEFAULT} ==> [ "$line" ]"
   done
-  [ $(echo -e "$list_sessions" | grep -c '')  = 1 ] || echo "${RED}kill${DEFAULT} ==> [ ${RED}Server${DEFAULT} ]"
+  [ $(echo "$list_sessions" | grep -c '')  = 1 ] || echo "${RED}kill${DEFAULT} ==> [ ${RED}Server${DEFAULT} ]"
   echo -e "${BLUE}back${DEFAULT}"
 }
 
 function tmuximum_kill_window() {
-  answer=$(tmuximum_kill_window_list | "${interface[@]}" --select-1 --prompt=tmuximum\ \>)
+  answer=$(tmuximum_kill_window_list | "${filer[@]}" --select-1 --prompt=tmuximum\ \>)
   if [[ "$answer" =~ "kill" ]]; then
-    tmux kill-window -t $(echo -e "$answer" | awk '{print $4}' | sed "s/://g")
+    tmux kill-window -t $(echo "$answer" | awk '{print $4}' | sed "s/://g")
     tmuximum_kill_window
   elif [[ $answer = "back" ]]; then
     tmuximum_operation
@@ -71,32 +71,11 @@ function tmuximum_kill_window() {
 
 function tmuximum_kill_window_list() {
   tmux list-windows | while read line ; do
-    line="$(echo -e $line | awk '{print $1 " " $2 " " $3 " " $4 " " $5 " " $9}')"
+    line="$(echo $line | awk '{print $1 " " $2 " " $3 " " $4 " " $5 " " $9}')"
     [[ $line =~ "active" ]] && line="${GREEN}$line${DEFAULT}"
     echo -e " ${RED}kill${DEFAULT} ==> [ $line ]"
   done
   echo -e "${BLUE}back${DEFAULT}"
-}
-
-
-function main() {
-  set_color
-  if which fzf-tmux >/dev/null 2>&1 ; then
-    interface=(fzf-tmux -r --ansi)
-  elif which fzf >/dev/null 2>&1 ; then
-    interface=(fzf)
-  else
-    echo -e "tmuximum: fzf or fzf-tmux is required."
-    exit 1
-  fi
-  if [[ $# = 0 ]] ; then
-    tmuximum_operation
-  else
-    case $1 in
-      "-h" ) tmuximum_help ;;
-      * ) tmuximum_help && exit 1 ;;
-    esac
-  fi
 }
 
 set_color() {
@@ -108,11 +87,24 @@ set_color() {
   readonly MAGENTA="\033[35m"
   readonly CYAN="\033[36m"
   readonly WHITE="\033[37m"
-
   readonly BOLD="\033[1m"
-
   readonly DEFAULT="\033[m"
 }
 
+function main() {
+  set_color
+# set_filter
+  filter=(fzf-tmux --ansi)
+  if [[ $# = 0 ]]; then
+    tmuximum_operation
+  elif [[ $# = 1 ]]; then
+    case $1 in
+      "-h" ) tmuximum_help ;;
+      * ) echo "tmuximum: illegal option $1" && exit 1
+    esac
+  else
+    echo "tmuximum: option must be one" && exit 1
+  fi
+}
 
 main $@
