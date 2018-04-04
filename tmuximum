@@ -1,51 +1,46 @@
-#!/bin/zsh
+#!/bin/bash
 
-if [[ $SHELL =~ "zsh" ]] ; then
-  autoload -Uz colors
-  colors
-fi
-
-tmuximum_help() {
-  echo "tmuximum: Usage"
-  echo "          OPTION or COMMAND is not required (Except for help)"
-  echo "          When you want to quit tmuximum, press esc" 
-  echo "          To read this help, enter \"tmuximum --help\" or \" tmuximum help\""
+function tmuximum_help() {
+  echo -e "tmuximum: Usage"
+  echo -e "$ tmuximum [OPTION]"
+  echo -e "OPTIONS : \"-h\" --> Display help message (this message)"
+  echo -e "To quit tmuximum, press esc" 
 }
 
-tmuximum_operation() {
+function tmuximum_operation() {
   answer=$(tmuximum_operation_list | "${interface[@]}" --select-1 --prompt=tmuximum\ \>)
   case $answer in
     *new\ session* ) tmux new-session ;;
     *new\ window* ) tmux new-window ;;
     "kill sessions" ) tmuximum_kill_session ;;
     "kill windows" ) tmuximum_kill_window ;;
-    *move* ) tmux select-window -t $(echo "$answer" | awk '{print $4}' | sed "s/://g") ;;
-    *attach* ) tmux attach -t $(echo "$answer" | awk '{print $4}' | sed 's/://') ;;
+    *move* ) tmux select-window -t $(echo -e "$answer" | awk '{print $4}' | sed "s/://g") ;;
+    *attach* ) tmux attach -t $(echo -e "$answer" | awk '{print $4}' | sed 's/://') ;;
   esac
 }
 
-tmuximum_operation_list() {
+function tmuximum_operation_list() {
   if [ -z $TMUX ]; then
     tmux list-sessions 2>/dev/null | while read line; do
-      [[ ! "$line" =~ "attached" ]] || line="${fg[green]}$line${reset_color}"
-      echo "${fg[green]}attach${reset_color} ==> [ "$line" ]"
+      [[ ! "$line" =~ "attached" ]] || line="${GREEN}$line${DEFAULT}"
+      echo -e "${GREEN}attach${DEFAULT} ==> [ "$line" ]"
     done
-    echo "${fg[green]}create${reset_color} ==> [ ${fg[blue]}new session${reset_color} ]"
+    echo -e "${GREEN}create${DEFAULT} ==> [ ${BLUE}new session${DEFAULT} ]"
   else
     tmux list-windows | sed "/active/d" | while read line; do
-      echo  "${fg[cyan]}move${reset_color} ==> [ $(echo $line | awk '{print $1 " " $2 " " $3 " " $4 " " $5}') ]"
+      echo -e  "${CYAN}move${DEFAULT} ==> [ $(echo $line | awk '{print $1 " " $2 " " $3 " " $4 " " $5}') ]"
     done
-    echo  "${fg[cyan]}move${reset_color} ==> [ ${fg[blue]}new window${reset_color} ]"
-    echo "${fg[red]}kill${reset_color} windows"
+    echo -e  "${CYAN}move${DEFAULT} ==> [ ${BLUE}new window${DEFAULT} ]"
+    echo -e "${RED}kill${DEFAULT} windows"
   fi
-  tmux has-session 2>/dev/null && echo "${fg[red]}kill${reset_color} sessions"
+  tmux has-session 2>/dev/null && echo -e "${RED}kill${DEFAULT} sessions"
 }
 
-tmuximum_kill_session() {
+function tmuximum_kill_session() {
   answer=$(tmuximum_kill_session_list | "${interface[@]}" --select-1 --prompt=tmuximum\ \>)
   case $answer in
     *kill*Server* ) tmux kill-server ; tmuximum_operation ;;
-    *kill*windows* ) tmux kill-session -t $(echo "$answer" | awk '{print $4}' | sed "s/://g")
+    *kill*windows* ) tmux kill-session -t $(echo -e "$answer" | awk '{print $4}' | sed "s/://g")
       if $(tmux has-session 2>/dev/null); then
         tmuximum_kill_session
       fi
@@ -54,49 +49,70 @@ tmuximum_kill_session() {
   esac
 }
 
-tmuximum_kill_session_list() {
+function tmuximum_kill_session_list() {
   list_sessions=$(tmux list-sessions 2>/dev/null);
-  echo "$list_sessions" | while read line; do
-    [[ "$line" =~ "attached" ]] && line="${fg[green]}"$line"${reset_color}"
-    echo  "${fg[red]}kill${reset_color} ==> [ "$line" ]"
+  echo -e "$list_sessions" | while read line; do
+    [[ "$line" =~ "attached" ]] && line="${GREEN}"$line"${DEFAULT}"
+    echo -e  "${RED}kill${DEFAULT} ==> [ "$line" ]"
   done
-  [ $(echo "$list_sessions" | grep -c '')  = 1 ] || echo "${fg[red]}kill${reset_color} ==> [ ${fg[red]}Server${reset_color} ]"
-  echo "${fg[blue]}back${reset_color}"
+  [ $(echo -e "$list_sessions" | grep -c '')  = 1 ] || echo "${RED}kill${DEFAULT} ==> [ ${RED}Server${DEFAULT} ]"
+  echo -e "${BLUE}back${DEFAULT}"
 }
 
-tmuximum_kill_window() {
+function tmuximum_kill_window() {
   answer=$(tmuximum_kill_window_list | "${interface[@]}" --select-1 --prompt=tmuximum\ \>)
   if [[ "$answer" =~ "kill" ]]; then
-    tmux kill-window -t $(echo "$answer" | awk '{print $4}' | sed "s/://g")
+    tmux kill-window -t $(echo -e "$answer" | awk '{print $4}' | sed "s/://g")
     tmuximum_kill_window
   elif [[ $answer = "back" ]]; then
     tmuximum_operation
   fi
 }
 
-tmuximum_kill_window_list() {
+function tmuximum_kill_window_list() {
   tmux list-windows | while read line ; do
-    line="$(echo $line | awk '{print $1 " " $2 " " $3 " " $4 " " $5 " " $9}')"
-    [[ $line =~ "active" ]] && line="${fg[green]}$line${reset_color}"
-    echo " ${fg[red]}kill${reset_color} ==> [ $line ]"
+    line="$(echo -e $line | awk '{print $1 " " $2 " " $3 " " $4 " " $5 " " $9}')"
+    [[ $line =~ "active" ]] && line="${GREEN}$line${DEFAULT}"
+    echo -e " ${RED}kill${DEFAULT} ==> [ $line ]"
   done
-  echo "${fg[blue]}back${reset_color}"
+  echo -e "${BLUE}back${DEFAULT}"
 }
 
-if which fzf-tmux >/dev/null 2>&1 ; then
-  interface=(fzf-tmux -r --ansi)
-elif which fzf >/dev/null 2>&1 ; then
-  interface=(fzf)
-else
-  echo "tmuximum: fzf or fzf-tmux is required."
-  exit 1
-fi
 
-if [[ $# = 0 ]] ; then
-  tmuximum_operation
-else
-  tmuximum_help
-  if [[ ! $# = 1 ]] || [[ ! $1 =~ help ]] ; then
+function main() {
+  set_color
+  if which fzf-tmux >/dev/null 2>&1 ; then
+    interface=(fzf-tmux -r --ansi)
+  elif which fzf >/dev/null 2>&1 ; then
+    interface=(fzf)
+  else
+    echo -e "tmuximum: fzf or fzf-tmux is required."
     exit 1
   fi
-fi
+  if [[ $# = 0 ]] ; then
+    tmuximum_operation
+  else
+    case $1 in
+      "\-h" ) tmuximum_help ;;
+      * ) tmuximum_help && exit 1 ;;
+    esac
+  fi
+}
+
+set_color() {
+  readonly BLACK="\033[30m"
+  readonly RED="\033[31m"
+  readonly GREEN="\033[32m"
+  readonly YELLOW="\033[33m"
+  readonly BLUE="\033[34m"
+  readonly MAGENTA="\033[35m"
+  readonly CYAN="\033[36m"
+  readonly WHITE="\033[37m"
+
+  readonly BOLD="\033[1m"
+
+  readonly DEFAULT="\033[m"
+}
+
+
+main $@
