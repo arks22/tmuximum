@@ -25,7 +25,7 @@ antigen bundle arks22/tmuximum
 #### Manually
 
 ```
-$ curl -L raw.github.com/arks22/tmuximum/master/install.bssh | bash 
+$ curl -L raw.github.com/arks22/tmuximum/master/install.bash | bash 
 ```
 
 ## Requirements
