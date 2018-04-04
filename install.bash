@@ -1,6 +1,6 @@
 if type git >/dev/null 2>&1; then
   echo "Downloading tmuximum with git..."
-  git clone https://github.com/arks22/tmuximum.git $HOME/tmuximum
+#  git clone https://github.com/arks22/tmuximum.git $HOME/tmuximum
 else
   tarball="https://github.com/arks22/tmuximum/archive/master.tar.gz"
   if type curl >/dev/null 2>&1; then
@@ -13,4 +13,4 @@ else
   mv -f tmuximum-master $HOME/tmuximum
 fi
 
-ln -sf $HOME/tmuximum/tmuximum /usr/local/bin/tmuximum || sudo ln -sf $HOME/tmuximum/tmuximum /usr/local/bin/tmuximum
+#ln -sf $HOME/tmuximum/tmuximum /usr/local/bin/tmuximum || sudo ln -sf $HOME/tmuximum/tmuximum /usr/local/bin/tmuximum
