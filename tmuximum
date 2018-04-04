@@ -96,7 +96,7 @@ function set-color() {
 }
 
 function set-filter() {
-  filters="peco:fzf-tmux:fzf:percol:gof"
+  filters="fzf-tmux:fzf:peco:percol:gof"
   while [[ -n $filters ]]; do
   filter=${filters%%:*}
     if type "$filter" >/dev/null 2>&1; then
