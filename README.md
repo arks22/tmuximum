@@ -37,6 +37,6 @@ Either of these is necessary.
 + `percol`
 + `gof`
 
-(fzf-tmux has highest priority. If you have fzf and percol, tmuximum use fzf-tmux.)
+(fzf-tmux has highest priority. For example, if you have fzf and percol, tmuximum use fzf.)
 
 Qiita:(Witten in Japanese) 👉 https://qiita.com/arks22/items/cb109867c7aa094354e5
