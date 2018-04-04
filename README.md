@@ -31,16 +31,12 @@ $ curl -L raw.github.com/arks22/tmuximum/master/install.sh | sh
 ## Requirements
 Either of these is necessary.
 
-+ `fzf` (or `fzf-tmux`)
++ `fzf-tmux`
++ `fzf`
 + `peco`
 + `percol`
++ `gof`
 
-By default, tmuximum uses `fzf` as fuzzy finder.
-If you want to use `peco` or `percol` , you need to write in `.zshrc` or `.bashrc` as follows:
-
-```zsh:.zshrc
-export FUZZY_FINDER="peco"
-```
-
+(fzf-tmux has highest priority. If you have fzf and percol, tmuximum use fzf-tmux.)
 
 Qiita:(Witten in Japanese) 👉 https://qiita.com/arks22/items/cb109867c7aa094354e5

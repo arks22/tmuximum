@@ -1,25 +1,27 @@
 #!/bin/bash
 
-function tmuximum_help() {
+function tmuximum::help() {
   echo "tmuximum: Usage"
   echo "$ tmuximum [OPTION]"
   echo "OPTIONS : \"-h\" --> Display help message (this message)"
+  echo "          \"-s\" --> Start kill session mode"
+  echo "          \"-w\" --> Start kill window mode"
   echo "To quit tmuximum, press esc" 
 }
 
-function tmuximum_operation() {
-  answer=$(tmuximum_operation_list | "${filter[@]}" --select-1 --prompt=tmuximum\ \>)
+function tmuximum::operation() {
+  answer=$(tmuximum::operation-list | "${filter[@]}" )
   case $answer in
     *new\ session* ) tmux new-session ;;
     *new\ window* ) tmux new-window ;;
-    "kill sessions" ) tmuximum_kill_session ;;
-    "kill windows" ) tmuximum_kill_window ;;
+    "kill sessions" ) tmuximum::kill-session ;;
+    "kill windows" ) tmuximum::kill-window ;;
     *move* ) tmux select-window -t $(echo  "$answer" | awk '{print $4}' | sed "s/://g") ;;
     *attach* ) tmux attach -t $(echo "$answer" | awk '{print $4}' | sed 's/://') ;;
   esac
 }
 
-function tmuximum_operation_list() {
+function tmuximum::operation-list() {
   if [ -z $TMUX ]; then
     tmux list-sessions 2>/dev/null | while read line; do
       [[ ! "$line" =~ "attached" ]] || line="${GREEN}$line${DEFAULT}"
@@ -36,20 +38,20 @@ function tmuximum_operation_list() {
   tmux has-session 2>/dev/null && echo -e "${RED}kill${DEFAULT} sessions"
 }
 
-function tmuximum_kill_session() {
-  answer=$(tmuximum_kill_session_list | "${filter[@]}" --select-1 --prompt=tmuximum\ \>)
+function tmuximum::kill-session() {
+  answer=$(tmuximum::kill-session-list | "${filter[@]}")
   case $answer in
-    *kill*Server* ) tmux kill-server ; tmuximum_operation ;;
+    *kill*Server* ) tmux kill-server ; tmuximum::operation ;;
     *kill*windows* ) tmux kill-session -t $(echo "$answer" | awk '{print $4}' | sed "s/://g")
       if $(tmux has-session 2>/dev/null); then
-        tmuximum_kill_session
+        tmuximum::kill-session
       fi
     ;;
-  "back" ) tmuximum_operation
+  "back" ) tmuximum::operation
   esac
 }
 
-function tmuximum_kill_session_list() {
+function tmuximum::kill-session-list() {
   list_sessions=$(tmux list-sessions 2>/dev/null);
   echo "$list_sessions" | while read line; do
     [[ "$line" =~ "attached" ]] && line="${GREEN}"$line"${DEFAULT}"
@@ -59,17 +61,17 @@ function tmuximum_kill_session_list() {
   echo -e "${BLUE}back${DEFAULT}"
 }
 
-function tmuximum_kill_window() {
-  answer=$(tmuximum_kill_window_list | "${filer[@]}" --select-1 --prompt=tmuximum\ \>)
+function tmuximum::kill-window() {
+  answer=$(tmuximum::kill-window-list | "${filer[@]}" )
   if [[ "$answer" =~ "kill" ]]; then
     tmux kill-window -t $(echo "$answer" | awk '{print $4}' | sed "s/://g")
-    tmuximum_kill_window
+    tmuximum::kill-window
   elif [[ $answer = "back" ]]; then
-    tmuximum_operation
+    tmuximum::operation
   fi
 }
 
-function tmuximum_kill_window_list() {
+function tmuximum::kill-window-list() {
   tmux list-windows | while read line ; do
     line="$(echo $line | awk '{print $1 " " $2 " " $3 " " $4 " " $5 " " $9}')"
     [[ $line =~ "active" ]] && line="${GREEN}$line${DEFAULT}"
@@ -78,28 +80,47 @@ function tmuximum_kill_window_list() {
   echo -e "${BLUE}back${DEFAULT}"
 }
 
-set_color() {
-  readonly BLACK="\033[30m"
-  readonly RED="\033[31m"
-  readonly GREEN="\033[32m"
-  readonly YELLOW="\033[33m"
-  readonly BLUE="\033[34m"
-  readonly MAGENTA="\033[35m"
-  readonly CYAN="\033[36m"
-  readonly WHITE="\033[37m"
-  readonly BOLD="\033[1m"
-  readonly DEFAULT="\033[m"
+function set-color() {
+  if [[ "${filter[@]}" =~ "fzf" ]]; then
+    readonly BLACK="\033[30m"
+    readonly RED="\033[31m"
+    readonly GREEN="\033[32m"
+    readonly YELLOW="\033[33m"
+    readonly BLUE="\033[34m"
+    readonly MAGENTA="\033[35m"
+    readonly CYAN="\033[36m"
+    readonly WHITE="\033[37m"
+    readonly BOLD="\033[1m"
+    readonly DEFAULT="\033[m"
+  fi
+}
+
+function set-filter() {
+  filters="peco:fzf-tmux:fzf:percol:gof"
+  while [[ -n $filters ]]; do
+  filter=${filters%%:*}
+    if type "$filter" >/dev/null 2>&1; then
+      [[ "$filter" =~ "fzf" ]] && filter=($filter --ansi --select-1 --prompt=tmuximum\ \>)
+      return 0
+    else
+      filters="${filters#*:}"
+    fi
+  done
+  echo "tmuximum: tmuximum requires fuzzy finder. Either of these is necessary."
+  echo "fzf, fzf-tmux, peco, percol, gof"
+  exit 1
 }
 
 function main() {
-  set_color
-# set_filter
-  filter=(fzf-tmux --ansi)
+  set-filter
+  set-color
   if [[ $# = 0 ]]; then
-    tmuximum_operation
+    tmuximum::operation
   elif [[ $# = 1 ]]; then
     case $1 in
-      "-h" ) tmuximum_help ;;
+      "-h" ) tmuximum::help ;;
+      "-s" ) tmuximum::kill-session ;;
+      "-w" ) tmuximum::kill-window ;;
       * ) echo "tmuximum: illegal option $1" && exit 1
     esac
   else
