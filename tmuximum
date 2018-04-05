@@ -4,8 +4,8 @@ function tmuximum::help() {
   echo "tmuximum: Usage"
   echo "$ tmuximum [OPTION]"
   echo "OPTIONS : \"-h\" --> Display help message (this message)"
-  echo "          \"-s\" --> Start kill session mode"
-  echo "          \"-w\" --> Start kill window mode"
+  echo "          \"-s\" --> Start kill-session mode"
+  echo "          \"-w\" --> Start kill-window mode"
   echo "To quit tmuximum, press esc" 
 }
 
@@ -30,10 +30,10 @@ function tmuximum::operation-list() {
     echo -e "${GREEN}create${DEFAULT} ==> [ ${BLUE}new session${DEFAULT} ]"
   else
     tmux list-windows | sed "/active/d" | while read line; do
-      echo -e  "${CYAN}move${DEFAULT} ==> [ $(echo $line | awk '{print $1 " " $2 " " $3 " " $4 " " $5}') ]"
+      echo -e "${CYAN}move${DEFAULT} ==> [ $(echo $line | awk '{print $1 " " $2 " " $3 " " $4 " " $5}') ]"
     done
-    echo -e  "${CYAN}move${DEFAULT} ==> [ ${BLUE}new window${DEFAULT} ]"
-    echo -e "${RED}kill${DEFAULT} windows"
+    echo -e "${CYAN}move${DEFAULT} ==> [ ${BLUE}new window${DEFAULT} ]"
+    (( $(tmux display-message -p '#{session_windows}') > 1 )) && echo -e "${RED}kill${DEFAULT} windows"
   fi
   tmux has-session 2>/dev/null && echo -e "${RED}kill${DEFAULT} sessions"
 }
@@ -42,10 +42,9 @@ function tmuximum::kill-session() {
   answer=$(tmuximum::kill-session-list | "${filter[@]}")
   case $answer in
     *kill*Server* ) tmux kill-server ; tmuximum::operation ;;
-    *kill*windows* ) tmux kill-session -t $(echo "$answer" | awk '{print $4}' | sed "s/://g")
-      if $(tmux has-session 2>/dev/null); then
-        tmuximum::kill-session
-      fi
+    *kill*windows* )
+      tmux kill-session -t $(echo "$answer" | awk '{print $4}' | sed "s/://g")
+      tmux has-session 2>/dev/null && tmuximum::kill-session || tmuximum::operation
     ;;
   "back" ) tmuximum::operation
   esac
@@ -55,18 +54,22 @@ function tmuximum::kill-session-list() {
   list_sessions=$(tmux list-sessions 2>/dev/null);
   echo "$list_sessions" | while read line; do
     [[ "$line" =~ "attached" ]] && line="${GREEN}"$line"${DEFAULT}"
-    echo -e  "${RED}kill${DEFAULT} ==> [ "$line" ]"
+    echo -e "${RED}kill${DEFAULT} ==> [ "$line" ]"
   done
   [ $(echo "$list_sessions" | grep -c '')  = 1 ] || echo "${RED}kill${DEFAULT} ==> [ ${RED}Server${DEFAULT} ]"
   echo -e "${BLUE}back${DEFAULT}"
 }
 
 function tmuximum::kill-window() {
-  answer=$(tmuximum::kill-window-list | "${filer[@]}" )
-  if [[ "$answer" =~ "kill" ]]; then
-    tmux kill-window -t $(echo "$answer" | awk '{print $4}' | sed "s/://g")
-    tmuximum::kill-window
-  elif [[ $answer = "back" ]]; then
+  if (( $(tmux display-message -p '#{session_windows}') > 1 )); then
+    answer=$(tmuximum::kill-window-list | "${filter[@]}" )
+    if [[ "$answer" =~ "kill" ]]; then
+      tmux kill-window -t $(echo "$answer" | awk '{print $4}' | sed "s/://g")
+      tmuximum::kill-window
+    elif [[ $answer = "back" ]]; then
+      tmuximum::operation
+    fi
+  else
     tmuximum::operation
   fi
 }
@@ -100,7 +103,8 @@ function set-filter() {
   while [[ -n $filters ]]; do
   filter=${filters%%:*}
     if type "$filter" >/dev/null 2>&1; then
-      [[ "$filter" =~ "fzf" ]] && filter=($filter --ansi --select-1 --prompt=tmuximum\ \>)
+      [[ "$filter" = "fzf" ]] && filter=($filter --ansi --prompt=tmuximum\ \>)
+      [[ "$filter" = "fzf-tmux" ]] && filter=($filter -r --ansi --prompt=tmuximum\ \>)
       return 0
     else
       filters="${filters#*:}"
