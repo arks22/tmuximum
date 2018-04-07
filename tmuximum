@@ -110,8 +110,8 @@ function set-filter() {
       filters="${filters#*:}"
     fi
   done
-  echo "tmuximum: tmuximum requires fuzzy finder. Either of these is necessary."
-  echo "fzf, fzf-tmux, peco, percol, gof"
+  echo "tmuximum: tmuximum requires fuzzy finder. Either of these is necessary." 1>&2
+  echo "fzf, fzf-tmux, peco, percol, gof" 1>&2
   exit 1
 }
 
@@ -125,10 +125,10 @@ function main() {
       "-h" ) tmuximum::help ;;
       "-s" ) tmuximum::kill-session ;;
       "-w" ) tmuximum::kill-window ;;
-      * ) echo "tmuximum: illegal option $1" && exit 1
+      * ) echo "tmuximum: illegal option $1" 1>&2 && exit 1 ;;
     esac
   else
-    echo "tmuximum: option must be one" && exit 1
+    echo "tmuximum: option must be one" 1>&2 && exit 1
   fi
 }
 
