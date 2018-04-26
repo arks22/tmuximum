@@ -13,4 +13,4 @@ else
   mv -f tmuximum-master $HOME/tmuximum
 fi
 
-ln -sf $HOME/tmuximum/tmuximum /usr/local/bin/tmuximum || sudo ln -sf $HOME/tmuximum/tmuximum /usr/local/bin/tmuximum
+sudo ln -sf $HOME/tmuximum/tmuximum /usr/local/bin/tmuximum

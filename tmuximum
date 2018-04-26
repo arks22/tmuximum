@@ -18,6 +18,7 @@ function tmuximum::operation() {
     "kill windows" ) tmuximum::kill-window ;;
     *move* ) tmux select-window -t $(echo  "$answer" | awk '{print $4}' | sed "s/://g") ;;
     *attach* ) tmux attach -t $(echo "$answer" | awk '{print $4}' | sed 's/://') ;;
+    "detach" ) tmux detach-client ;;
   esac
 }
 
@@ -33,7 +34,10 @@ function tmuximum::operation-list() {
       echo -e "${CYAN}move${DEFAULT} ==> [ $(echo $line | awk '{print $1 " " $2 " " $3 " " $4 " " $5}') ]"
     done
     echo -e "${CYAN}move${DEFAULT} ==> [ ${BLUE}new window${DEFAULT} ]"
-    (( $(tmux display-message -p '#{session_windows}') > 1 )) && echo -e "${RED}kill${DEFAULT} windows"
+    echo "detach"
+    if (( $(tmux display-message -p '#{session_windows}') > 1 )); then
+      echo -e "${RED}kill${DEFAULT} windows"
+    fi
   fi
   tmux has-session 2>/dev/null && echo -e "${RED}kill${DEFAULT} sessions"
 }
