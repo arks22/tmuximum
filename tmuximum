@@ -60,7 +60,7 @@ function tmuximum::kill-session-list() {
     [[ "$line" =~ "attached" ]] && line="${GREEN}"$line"${DEFAULT}"
     echo -e "${RED}kill${DEFAULT} ==> [ "$line" ]"
   done
-  [ $(echo "$list_sessions" | grep -c '')  = 1 ] || echo "${RED}kill${DEFAULT} ==> [ ${RED}Server${DEFAULT} ]"
+  [ $(echo "$list_sessions" | grep -c '')  = 1 ] || echo -e "${RED}kill${DEFAULT} ==> [ ${RED}Server${DEFAULT} ]"
   echo -e "${BLUE}back${DEFAULT}"
 }
 
