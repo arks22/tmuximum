@@ -139,3 +139,5 @@ function main() {
 function tmuximum() {
   main $@
 }
+
+zle -N tmuximum
