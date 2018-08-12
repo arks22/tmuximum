@@ -22,6 +22,12 @@ zplug "arks22/tmuximum", as:command
 antigen bundle arks22/tmuximum
 ```
 
+#### zgen users
+
+```
+zgen load yuki-ycino/tmuximum
+```
+
 #### Manually
 
 ```
