@@ -36,7 +36,7 @@ function tmuximum::operation-list() {
    echo -e "${CYAN}switch${DEFAULT} ==> [ ${BLUE}new window${DEFAULT} ]"
     echo "detach"
     if (( $(tmux display-message -p '#{session_windows}') > 1 )); then
-      echo -e "${RED}kill windows${DEFAULT} "
+      echo -e "${RED}kill windows${DEFAULT}" 
     fi
   fi
   tmux has-session 2>/dev/null && echo -e "${RED}kill sessions${DEFAULT}"
@@ -87,6 +87,8 @@ function tmuximum::kill-window-list() {
   echo -e "${BLUE}back${DEFAULT}"
 }
 
+
+
 function set-color() {
   if [[ "${filter[@]}" =~ "fzf" ]]; then
     readonly BLACK="\033[30m"
@@ -101,6 +103,8 @@ function set-color() {
     readonly DEFAULT="\033[m"
   fi
 }
+
+
 
 function set-filter() {
   filters="fzf-tmux:fzf:peco:percol:gof"
