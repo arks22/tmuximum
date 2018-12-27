@@ -33,13 +33,13 @@ function tmuximum::operation-list() {
     tmux list-windows | sed "/active/d" | while read line; do
       echo -e "${CYAN}move${DEFAULT} ==> [ $(echo $line | awk '{print $1 " " $2 " " $3 " " $4 " " $5}') ]"
     done
-   echo -e "[ ${BLUE}new window${DEFAULT} ]"
+   echo -e "${CYAN}move${DEFAULT} ==> [ ${BLUE}new window${DEFAULT} ]"
     echo "detach"
     if (( $(tmux display-message -p '#{session_windows}') > 1 )); then
-      echo -e "${RED}kill${DEFAULT} windows"
+      echo -e "${RED}kill windows${DEFAULT} "
     fi
   fi
-  tmux has-session 2>/dev/null && echo -e "${RED}kill${DEFAULT} sessions"
+  tmux has-session 2>/dev/null && echo -e "${RED}kill sessions${DEFAULT}"
 }
 
 function tmuximum::kill-session() {
