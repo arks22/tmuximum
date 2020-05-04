@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env zsh
 
 function tmuximum::help() {
   echo "tmuximum: Usage"
@@ -140,4 +140,8 @@ function main() {
   fi
 }
 
-main $@
+function tmuximum() {
+  main $@
+}
+
+zle -N tmuximum
