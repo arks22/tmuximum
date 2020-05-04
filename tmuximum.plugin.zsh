@@ -6,7 +6,7 @@ function tmuximum::help() {
   echo "OPTIONS : \"-h\" --> Display help message (this message)"
   echo "          \"-s\" --> Start kill-session mode"
   echo "          \"-w\" --> Start kill-window mode"
-  echo "To quit tmuximum, press esc" 
+  echo "To quit tmuximum, press esc"
 }
 
 function tmuximum::operation() {
@@ -43,12 +43,18 @@ function tmuximum::operation-list() {
 }
 
 function tmuximum::kill-session() {
-  answer=$(tmuximum::kill-session-list | "${filter[@]}")
+  if [[ $filter[1] == "fzf-tmux" ]] || [[ $filter[1] == "fzf" ]]; then
+    answer=$(tmuximum::kill-session-list | "${multi_filter[@]}")
+  else
+    answer=$(tmuximum::kill-session-list | "${filter[@]}")
+  fi
+
   case $answer in
     *kill*Server* ) tmux kill-server ; tmuximum::operation ;;
     *kill*windows* )
-      tmux kill-session -t $(echo "$answer" | awk '{print $4}' | sed "s/://g")
-      tmux has-session 2>/dev/null && tmuximum::kill-session || tmuximum::operation
+      echo $answer | while read -r session; do
+        tmux kill-session -t $(echo $session | awk '{print $4}' | sed "s/://g")
+      done
     ;;
   "back" ) tmuximum::operation
   esac
@@ -66,9 +72,16 @@ function tmuximum::kill-session-list() {
 
 function tmuximum::kill-window() {
   if (( $(tmux display-message -p '#{session_windows}') > 1 )); then
-    answer=$(tmuximum::kill-window-list | "${filter[@]}" )
+    if [[ $filter[1] == "fzf-tmux" ]] || [[ $filter[1] == "fzf" ]]; then
+      answer=$(tmuximum::kill-window-list | "${multi_filter[@]}")
+    else
+      answer=$(tmuximum::kill-window-list | "${filter[@]}")
+    fi
+
     if [[ "$answer" =~ "kill" ]]; then
-      tmux kill-window -t $(echo "$answer" | awk '{print $4}' | sed "s/://g")
+      echo $answer | while read -r window; do
+        tmux kill-window -t $(echo $window | awk '{print $4}' | sed "s/://g")
+      done
       tmuximum::kill-window
     elif [[ $answer = "back" ]]; then
       tmuximum::operation
@@ -111,8 +124,8 @@ function set-filter() {
   while [[ -n $filters ]]; do
   filter=${filters%%:*}
     if type "$filter" >/dev/null 2>&1; then
-      [[ "$filter" = "fzf" ]] && filter=($filter --ansi --prompt=tmuximum\ \>)
-      [[ "$filter" = "fzf-tmux" ]] && filter=($filter -r --ansi --prompt=tmuximum\ \>)
+      [[ "$filter" = "fzf" ]] && filter=($filter --ansi --prompt="tmuximum >") && multi_filter=($filter --multi --ansi --prompt="tmuximum >")
+      [[ "$filter" = "fzf-tmux" ]] && filter=($filter -r --ansi --prompt="tmuximum >") && multi_filter=($filter --multi --ansi --prompt="tmuximum >")
       return 0
     else
       filters="${filters#*:}"
