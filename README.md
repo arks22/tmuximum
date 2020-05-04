@@ -4,8 +4,18 @@ You can do all these operations with `tmuximum` alone.
 
 ## Usage
 
+### Command
+
 ```
 $ tmuximum
+```
+
+### Widget
+
+Allocate to shortcut key
+
+```.zshrc
+bindkey '^[t' tmuximum
 ```
 
 ## Installastion

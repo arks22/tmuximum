@@ -16,7 +16,7 @@ function tmuximum::operation() {
     *new\ window* ) tmux new-window ;;
     "kill sessions" ) tmuximum::kill-session ;;
     "kill windows" ) tmuximum::kill-window ;;
-    *move* ) tmux select-window -t $(echo  "$answer" | awk '{print $4}' | sed "s/://g") ;;
+    *switch* ) tmux select-window -t $(echo  "$answer" | awk '{print $4}' | sed "s/://g") ;
     *attach* ) tmux attach -t $(echo "$answer" | awk '{print $4}' | sed 's/://') ;;
     "detach" ) tmux detach-client ;;
   esac
@@ -28,18 +28,18 @@ function tmuximum::operation-list() {
       [[ ! "$line" =~ "attached" ]] || line="${GREEN}$line${DEFAULT}"
       echo -e "${GREEN}attach${DEFAULT} ==> [ "$line" ]"
     done
-    echo -e "${GREEN}create${DEFAULT} ==> [ ${BLUE}new session${DEFAULT} ]"
+    echo -e "${GREEN}attach${DEFAULT} ==> [ ${BLUE}new session${DEFAULT} ]"
   else
     tmux list-windows | sed "/active/d" | while read line; do
-      echo -e "${CYAN}move${DEFAULT} ==> [ $(echo $line | awk '{print $1 " " $2 " " $3 " " $4 " " $5}') ]"
+      echo -e "${CYAN}switch${DEFAULT} ==> [ $(echo $line | awk '{print $1 " " $2 " " $3 " " $4 " " $5}') ]"
     done
-    echo -e "${CYAN}move${DEFAULT} ==> [ ${BLUE}new window${DEFAULT} ]"
+   echo -e "${CYAN}switch${DEFAULT} ==> [ ${BLUE}new window${DEFAULT} ]"
     echo "detach"
     if (( $(tmux display-message -p '#{session_windows}') > 1 )); then
-      echo -e "${RED}kill${DEFAULT} windows"
+      echo -e "${RED}kill windows${DEFAULT}" 
     fi
   fi
-  tmux has-session 2>/dev/null && echo -e "${RED}kill${DEFAULT} sessions"
+  tmux has-session 2>/dev/null && echo -e "${RED}kill sessions${DEFAULT}"
 }
 
 function tmuximum::kill-session() {
@@ -152,3 +152,5 @@ function main() {
 function tmuximum() {
   main $@
 }
+
+zle -N tmuximum
