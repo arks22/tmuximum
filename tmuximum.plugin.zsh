@@ -16,7 +16,7 @@ function tmuximum::operation() {
     *new\ window* ) tmux new-window ;;
     "kill sessions" ) tmuximum::kill-session ;;
     "kill windows" ) tmuximum::kill-window ;;
-    *switch* ) tmux select-window -t $(echo  "$answer" | awk '{print $4}' | sed "s/://g") ;
+    *switch* ) tmux select-window -t $(echo  "$answer" | awk '{print $4}' | sed "s/://g") ;;
     *attach* ) tmux attach -t $(echo "$answer" | awk '{print $4}' | sed 's/://') ;;
     "detach" ) tmux detach-client ;;
   esac
