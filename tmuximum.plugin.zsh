@@ -16,7 +16,7 @@ function tmuximum::operation() {
     *new\ window* ) tmux new-window ;;
     "kill sessions" ) tmuximum::kill-session ;;
     "kill windows" ) tmuximum::kill-window ;;
-    *switch* ) tmux select-window -t $(echo  "$answer" | awk '{print $4}' | sed "s/://g") ;;
+    *switch* ) tmux select-window -t $(echo  "$answer" | awk '{print $4}' | sed "s/://g") ;
     *attach* ) tmux attach -t $(echo "$answer" | awk '{print $4}' | sed 's/://') ;;
     "detach" ) tmux detach-client ;;
   esac
@@ -100,8 +100,6 @@ function tmuximum::kill-window-list() {
   echo -e "${BLUE}back${DEFAULT}"
 }
 
-
-
 function set-color() {
   if [[ "${filter[@]}" =~ "fzf" ]]; then
     readonly BLACK="\033[30m"
@@ -116,8 +114,6 @@ function set-color() {
     readonly DEFAULT="\033[m"
   fi
 }
-
-
 
 function set-filter() {
   filters="fzf-tmux:fzf:peco:percol:gof"
