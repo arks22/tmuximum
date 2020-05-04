@@ -1,1 +1,1 @@
-tmuximum.plugin.zsh
+tmuximum
