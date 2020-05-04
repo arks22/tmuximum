@@ -149,8 +149,4 @@ function main() {
   fi
 }
 
-function tmuximum() {
-  main $@
-}
-
-zle -N tmuximum
+main $@
