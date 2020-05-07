@@ -6,11 +6,11 @@ You can do all these operations with `tmuximum` alone.
 ユーザーの希望により、zgenやantigenなどへの対応、ウィジェット機能などの追加を行っていましたが、それらの機能の追加を中止しました。
 
 + 本来tmuximumはコマンドであってプラグインではないこと、
-+ zsh専用ではなく様々なシェル への対応を考えていたこと、
++ zsh専用ではなく様々なシェルへの対応を考えていたこと、
 + fuzzy finderのパワーを借りることにより、薄いShellScriptで必要十分の機能を提供することがこのコマンドの開発理念であること
 
 などが理由です。しばらくこのコマンドの保守を放置してしまっていたため、使用してくださった方や、PRを下さった方にはご迷惑をおかけしました。
-これからも、必要と思われる機能の追加やバグフィックスが適宜行っていく予定です。ご協力よろしくお願いします。
+これからも、必要と思われる機能の追加やバグフィックスは適宜行っていく予定です。ご協力よろしくお願いします。
 
 ## Usage
 
@@ -20,9 +20,6 @@ You can do all these operations with `tmuximum` alone.
 $ tmuximum
 ```
 
-```.zshrc
-bindkey '^[t' tmuximum
-```
 
 ## Installastion
 
@@ -32,7 +29,6 @@ bindkey '^[t' tmuximum
 zplug "arks22/tmuximum", as:command
 ```
 
-```
 
 #### Manually
 
